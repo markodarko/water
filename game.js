@@ -9,20 +9,28 @@ class Wave{
 	constructor(bounds){
 		this.position = 0;
 		this.direction = 1;
-		this.amplitude = GRID;
+		this.amplitude = GRID*2;
+	}
+	setWaveProperties(pos,dir,amp){
+		this.position = pos;
+		this.direction = dir;
+		this.amplitude = amp;
 	}
 	reduceAmplitude(){
-		if (this.amplitude == 0) {this.position = -1; return;}
-		this.amplitude = toZero(this.amplitude, this.amplitude/4);		
+		this.amplitude = toZero(this.amplitude, 2);	
 	};
-	updatePosition(){
+	updatePosition(max){
 		this.position += this.direction
+		if (this.position >= max){
+			this.position = max-1;
+			this.direction *= -1;
+		}
+		else if(this.position < 0){
+			this.position = 0;
+			this.direction *= -1;
+		}
 	}
-	update(){
-		this.updatePosition();
-		this.reduceAmplitude();
-		
-	}
+	
 }
 class WaterDrop{
 	constructor(x,y){
@@ -44,7 +52,7 @@ class WaterDrop{
 	}
 	updateWaveVelocity(){
 		let grav = .5;
-		if (this.h > -GRID){
+		if (this.h >= -GRID){
 			grav *=-1
 		}
 		this.velocity += grav;	
@@ -56,7 +64,7 @@ class WaterDrop{
 			this.h = min;
 			this.velocity = this.velocity*.2;
 		}
-		if (this.h > max){
+		else if (this.h > max){
 			this.h = max;
 			this.velocity = this.velocity*.2;
 		}
@@ -83,11 +91,14 @@ class WaterPool{
 		}
 	}
 	update(){
-		if(this.wave.position < 0 || this.wave.position >= this.size) return;
+		if(this.wave.position < 0) return;
 		const drop = this.drops[this.wave.position]
-		drop.amp = GRID;
-		drop.velocity = -GRID/4;
-		this.wave.update()
+		drop.amp += this.wave.amplitude/2;
+		drop.velocity = Math.min(drop.velocity-4,-4);
+		
+		this.wave.updatePosition(this.size);
+		this.wave.reduceAmplitude();
+		if (this.wave.amplitude == 0)this.wave.position = -1;
 	}
 }
 
