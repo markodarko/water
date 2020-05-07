@@ -12,15 +12,16 @@ class Wave{
 		this.amplitude = GRID;
 	}
 	reduceAmplitude(){
-		if (this.amplitude == 0) return;
+		if (this.amplitude == 0) {this.position = -1; return;}
 		this.amplitude = toZero(this.amplitude, this.amplitude/4);		
 	};
 	updatePosition(){
 		this.position += this.direction
 	}
 	update(){
-		this.reduceAmplitude();
 		this.updatePosition();
+		this.reduceAmplitude();
+		
 	}
 }
 class WaterDrop{
