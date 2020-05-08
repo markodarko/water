@@ -6,10 +6,10 @@ function toZero(number, decay) {
     return number * sign;
   }
 class Wave{
-	constructor(bounds){
-		this.position = 0;
-		this.direction = 1;
-		this.amplitude = GRID*2;
+	constructor(dir,pos){
+		this.position = pos;
+		this.direction = dir;
+		this.amplitude = GRID;
 	}
 	setWaveProperties(pos,dir,amp){
 		this.position = pos;
@@ -23,12 +23,17 @@ class Wave{
 		this.position += this.direction
 		if (this.position >= max){
 			this.position = max-1;
-			this.direction *= -1;
+			this.reverseDir();
+			
 		}
 		else if(this.position < 0){
 			this.position = 0;
-			this.direction *= -1;
+			this.reverseDir();
 		}
+	}
+	reverseDir(){
+		this.direction *= -1;
+		this.amplitude = Math.ceil(this.amplitude/2);
 	}
 	
 }
@@ -56,10 +61,11 @@ class WaterDrop{
 			grav *=-1
 		}
 		this.velocity += grav;	
+	
 	}
 	checkWaveMinMaxBounds(){
 		const min = -GRID - this.amp;
-		const max = -GRID + this.amp/2;
+		const max = -GRID/2 // + this.amp/2;
 		if (this.h < min){
 			this.h = min;
 			this.velocity = this.velocity*.2;
@@ -75,30 +81,37 @@ class WaterDrop{
 			this.h = -GRID
 		}
 	};
-	draw(){
-		ctx.fillStyle = COLORS.BLUE;
+	draw(color=COLORS.BLUE){
+		ctx.fillStyle = color;
 		ctx.fillRect(this.x,this.y,this.w,this.h)
 	}
 }
-
+var time = 0
 class WaterPool{
 	constructor(dropCount){
 		this.size = dropCount;
 		this.drops = [];
-		this.wave = new Wave(dropCount);
+		this.wave = [new Wave(-1,11),new Wave(1,12)];
 		for(let i=0;i<dropCount;i++){
 		this.drops.push(new WaterDrop(3*GRID+i*PX_SIZE,6));
 		}
 	}
 	update(){
-		if(this.wave.position < 0) return;
-		const drop = this.drops[this.wave.position]
-		drop.amp += this.wave.amplitude/2;
-		drop.velocity = Math.min(drop.velocity-4,-4);
+		time++
+		if (time % 5 != 0) return;
+		this.wave.forEach( wave =>{
+		if(wave.position >= 0){
+			const drop = this.drops[wave.position]
+			drop.draw(COLORS.RED)
+			if (drop.amp == 0)drop.velocity = -4;
+			drop.amp += wave.amplitude;
+			drop.velocity = Math.min(drop.velocity-4,-2);
 		
-		this.wave.updatePosition(this.size);
-		this.wave.reduceAmplitude();
-		if (this.wave.amplitude == 0)this.wave.position = -1;
+			wave.updatePosition(this.size);
+			wave.reduceAmplitude();
+			if (wave.amplitude == 0)wave.position = -1;
+		}
+		})
 	}
 }
 
@@ -137,9 +150,10 @@ class GameControl{
   }
   draw(){
 	//oasis.drops[5].draw()
-	oasis.update()
+	
 	oasis.drops.forEach(drop=>drop.draw())
 	oasis.drops.forEach(drop=>drop.bounce())
+	oasis.update()
 	drawGround()
   }
 }
