@@ -35,7 +35,6 @@ class Wave{
 		this.direction *= -1;
 		this.amplitude = Math.ceil(this.amplitude/2);
 	}
-	
 }
 class WaterDrop{
 	constructor(x,y){
@@ -65,14 +64,14 @@ class WaterDrop{
 	}
 	checkWaveMinMaxBounds(){
 		const min = -GRID - this.amp;
-		const max = -GRID/2 // + this.amp/2;
+		const max = -GRID + this.amp/2;
 		if (this.h < min){
 			this.h = min;
-			this.velocity = this.velocity*.2;
+			this.velocity = this.velocity/2;
 		}
 		else if (this.h > max){
 			this.h = max;
-			this.velocity = this.velocity*.2;
+			this.velocity = this.velocity/2;
 		}
 	};
 	reduceAmplitude(){
@@ -103,10 +102,10 @@ class WaterPool{
 		if(wave.position >= 0){
 			const drop = this.drops[wave.position]
 			drop.draw(COLORS.RED)
-			if (drop.amp == 0)drop.velocity = -4;
+			if (drop.amp == 0)drop.velocity = -8;
+			else drop.velocity = Math.min(drop.velocity-4,-2);
 			drop.amp += wave.amplitude;
-			drop.velocity = Math.min(drop.velocity-4,-2);
-		
+			
 			wave.updatePosition(this.size);
 			wave.reduceAmplitude();
 			if (wave.amplitude == 0)wave.position = -1;
@@ -149,8 +148,6 @@ class GameControl{
 	 
   }
   draw(){
-	//oasis.drops[5].draw()
-	
 	oasis.drops.forEach(drop=>drop.draw())
 	oasis.drops.forEach(drop=>drop.bounce())
 	oasis.update()
